@@ -35,10 +35,10 @@ app.use(session({
     collectionName: 'sessions'
   }),
   cookie: { 
-    secure: true,
+    secure: true, // Utilisez true si vous êtes en HTTPS
     httpOnly: true,
     sameSite: 'none',
-    domain: '.vercel.app' // Incluez le point pour couvrir tous les sous-domaines
+    domain: '.vercel.app' // Assurez-vous d'inclure le point pour couvrir tous les sous-domaines
   }
 }));
 
