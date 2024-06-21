@@ -7,6 +7,8 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
 const User = require('../models/User');
+const MongoStore = require('connect-mongo');
+const cookieParser = require('cookie-parser');
 
 // Initialisez une application Express
 const app = express();
@@ -21,11 +23,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Utilisez cookie-parser pour gérer les cookies
+app.use(cookieParser());
+
 // Configurez la session
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    collectionName: 'sessions'
+  }),
   cookie: { 
     secure: true, // Assurez-vous que ce paramètre est défini si vous utilisez HTTPS
     httpOnly: true, // Assurez-vous que ce paramètre est défini pour la sécurité
@@ -82,12 +91,8 @@ app.get('/api/auth/google/callback',
 );
 
 app.get('/api/auth/logout', (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-    res.redirect('https://ljdw-front.vercel.app/');
-  });
+  req.logout();
+  res.redirect('https://ljdw-front.vercel.app/');
 });
 
 // Route de test
@@ -213,6 +218,18 @@ app.get('/api/auth/status', (req, res) => {
       user: null
     });
   }
+});
+
+// Route de test pour vérifier les cookies de session
+app.get('/api/auth/test-cookie', (req, res) => {
+  console.log('Cookies:', req.cookies);
+  console.log('Session:', req.session);
+  console.log('Is Authenticated:', req.isAuthenticated());
+  res.json({
+    cookies: req.cookies,
+    session: req.session,
+    isAuthenticated: req.isAuthenticated()
+  });
 });
 
 // Exportez l'application Express en tant que fonction serverless
