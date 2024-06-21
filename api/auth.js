@@ -55,6 +55,10 @@ passport.use(new GoogleStrategy({
   }
 }));
 
+app.get('/api/auth/test', (req, res) => {
+    res.status(200).send('Hello, world!');
+})
+
 // Routes d'authentification
 app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
