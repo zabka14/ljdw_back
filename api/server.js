@@ -38,7 +38,7 @@ app.use(session({
     secure: true,
     httpOnly: true,
     sameSite: 'none',
-    domain: 'vercel.app' // Assurez-vous que ce domaine correspond à votre domaine de frontend et backend
+    domain: '.vercel.app' // Incluez le point pour couvrir tous les sous-domaines
   }
 }));
 
@@ -74,8 +74,10 @@ passport.use(new GoogleStrategy({
       });
       await user.save();
     }
+    console.log('User authenticated:', user);
     done(null, user);
   } catch (error) {
+    console.error('Error in Google Strategy:', error);
     done(error, null);
   }
 }));
@@ -86,6 +88,7 @@ app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile',
 app.get('/api/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
+    console.log('Google callback, user:', req.user);
     res.redirect('https://ljdw-front.vercel.app/'); // Redirection après authentification réussie
   }
 );
