@@ -36,7 +36,7 @@ app.use(session({
   }),
   cookie: { 
     secure: true, // Utilisez true si vous êtes en HTTPS
-    httpOnly: true,
+    httpOnly: false,
     sameSite: 'none',
     domain: '.vercel.app' // Assurez-vous d'inclure le point pour couvrir tous les sous-domaines
   }
