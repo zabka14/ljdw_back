@@ -59,6 +59,10 @@ app.get('/api/auth/test', (req, res) => {
     res.status(200).send('Hello, world!');
 })
 
+app.get('/api/auth', (req, res) => {
+    res.status(200).send('Hello, world, racine!!');
+})
+
 // Routes d'authentification
 app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
