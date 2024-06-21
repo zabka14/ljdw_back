@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const Post = require('../models/Post');
 const cors = require('cors');
+const auth = require('./auth'); // Assurez-vous d'importer auth.js
 
 // Initialisez une application Express
 const app = express();
