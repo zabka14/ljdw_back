@@ -42,13 +42,9 @@ mongoose.connect(dbUri, {
   console.error('Error connecting to MongoDB:', error);
 });
 
-// Route de test pour vérifier le CORS
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'CORS works!' });
-});
 
 // Gestion de la requête POST pour créer un nouveau post
-app.post('/api/posts.js', upload.single('file'), async (req, res) => {
+app.post('/api/posts', upload.single('file'), async (req, res) => {
   try {
     const { text, url } = req.body;
     let fileUrl;
@@ -70,7 +66,7 @@ app.post('/api/posts.js', upload.single('file'), async (req, res) => {
 });
 
 // Gestion de la requête GET pour récupérer les posts avec pagination
-app.get('/api/posts.js', async (req, res) => {
+app.get('/api/posts', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 6;
@@ -88,7 +84,7 @@ app.get('/api/posts.js', async (req, res) => {
 });
 
 // Gestion de la requête PUT pour liker un post
-app.put('/api/posts.js', async (req, res) => {
+app.put('/api/posts', async (req, res) => {
   try {
     const { id, likes } = req.body;
     const post = await Post.findById(id);
