@@ -18,73 +18,77 @@ app.use(cors({
 
 // Middleware pour parsing JSON
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
 
 // Configurez la session
 app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Set secure: true if using https
-  }));
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set secure: true if using https
+}));
 
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
-  
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await User.findById(id);
-      done(null, user);
-    } catch (error) {
-      done(error, null);
+// Initialisez Passport.js
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: process.env.CALLBACK_URL
+}, async (token, tokenSecret, profile, done) => {
+  try {
+    let user = await User.findOne({ googleId: profile.id });
+    if (!user) {
+      user = new User({
+        googleId: profile.id,
+        displayName: profile.displayName,
+        emails: profile.emails.map(email => email.value)
+      });
+      await user.save();
     }
-  });
-  
-  passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.CALLBACK_URL
-  }, async (token, tokenSecret, profile, done) => {
-    try {
-      let user = await User.findOne({ googleId: profile.id });
-      if (!user) {
-        user = new User({
-          googleId: profile.id,
-          displayName: profile.displayName,
-          emails: profile.emails.map(email => email.value)
-        });
-        await user.save();
-      }
-      done(null, user);
-    } catch (error) {
-      done(error, null);
-    }
-  }));
-  
-  app.get('/api/auth/test', (req, res) => {
-      res.status(200).send('Hello, world!');
-  })
-  
-  app.get('/api/auth', (req, res) => {
-      res.status(200).send('Hello, world, racine!!');
-  })
-  
-  // Routes d'authentification
-  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-  
-  app.get('/api/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/' }),
-    (req, res) => {
-      res.redirect('https://ljdw-front.vercel.app/'); // Redirection après authentification réussie
-    }
-  );
-  
-  app.get('/api/auth/logout', (req, res) => {
-    req.logout();
-    res.redirect('https://ljdw-front.vercel.app/');
-  });
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
+}));
+
+// Routes d'authentification
+app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/api/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (req, res) => {
+    res.redirect('https://ljdw-front.vercel.app/'); // Redirection après authentification réussie
+  }
+);
+
+app.get('/api/auth/logout', (req, res) => {
+  req.logout();
+  res.redirect('https://ljdw-front.vercel.app/');
+});
+
+// Route de test
+app.get('/api/auth/test', (req, res) => {
+  res.status(200).send('Test route works!');
+});
+
+app.get('/api/auth', (req, res) => {
+  res.status(200).send('Auth route works!');
+});
 
 // Configuration de multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
@@ -113,6 +117,13 @@ mongoose.connect(dbUri, {
   console.error('Error connecting to MongoDB:', error);
 });
 
+// Middleware pour vérifier si l'utilisateur est authentifié
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: 'User not authenticated' });
+}
 
 // Gestion de la requête POST pour créer un nouveau post
 app.post('/api/posts', upload.single('file'), async (req, res) => {
@@ -136,14 +147,6 @@ app.post('/api/posts', upload.single('file'), async (req, res) => {
   }
 });
 
-// Middleware pour vérifier si l'utilisateur est authentifié
-function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.status(401).json({ error: 'User not authenticated' });
-  }
-
 // Gestion de la requête GET pour récupérer les posts avec pagination
 app.get('/api/posts', async (req, res) => {
   try {
@@ -163,30 +166,30 @@ app.get('/api/posts', async (req, res) => {
 });
 
 // Gestion de la requête PUT pour liker un post
-app.put('/api/posts', ensureAuthenticated, async (req, res) => {
-    try {
-      const { id, likes } = req.body;
-      const post = await Post.findById(id);
-      if (!post) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-  
-      if (!post.likedBy) {
-        post.likedBy = [];
-      }
-  
-      if (post.likedBy.includes(req.user.id)) {
-        return res.status(400).json({ error: 'User already liked this post' });
-      }
-  
-      post.likes += 1;
-      post.likedBy.push(req.user.id);
-      await post.save();
-      res.status(200).json(post);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+app.put('/api/posts/like', ensureAuthenticated, async (req, res) => {
+  try {
+    const { id, likes } = req.body;
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
     }
-  });
+
+    if (!post.likedBy) {
+      post.likedBy = [];
+    }
+
+    if (post.likedBy.includes(req.user.id)) {
+      return res.status(400).json({ error: 'User already liked this post' });
+    }
+
+    post.likes += 1;
+    post.likedBy.push(req.user.id);
+    await post.save();
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Exportez l'application Express en tant que fonction serverless
 module.exports = app;
