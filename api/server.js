@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const Post = require('../models/Post');
-const cors = require('cors');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
@@ -13,11 +12,6 @@ const cookieParser = require('cookie-parser');
 // Initialisez une application Express
 const app = express();
 
-// Utilisez le middleware CORS pour autoriser les requêtes cross-origin
-app.use(cors({
-  origin: 'https://ljdw-front.vercel.app', // Remplacez par l'URL de votre frontend déployé
-  credentials: true // Permettre les cookies d'authentification
-}));
 
 // Middleware pour parsing JSON
 app.use(express.json());
@@ -98,13 +92,13 @@ app.get('/api/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
     console.log('Google callback, user:', req.user);
-    res.redirect('https://ljdw-front.vercel.app/'); // Redirection après authentification réussie
+    res.redirect('/'); // Redirection après authentification réussie
   }
 );
 
 app.get('/api/auth/logout', (req, res) => {
   req.logout();
-  res.redirect('https://ljdw-front.vercel.app/');
+  res.redirect('/');
 });
 
 // Route de test
