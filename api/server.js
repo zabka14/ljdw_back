@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const Post = require('../models/Post');
 const cors = require('cors');
-const auth = require('./auth'); // Assurez-vous d'importer auth.js
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
@@ -19,9 +18,6 @@ app.use(cors({
 
 // Middleware pour parsing JSON
 app.use(express.json());
-
-// Utilisez le middleware d'authentification
-app.use(auth);
 
 app.use(express.urlencoded({ extended: true }));
 
