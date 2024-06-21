@@ -9,8 +9,7 @@ const app = express();
 
 // Utilisez le middleware CORS pour autoriser les requêtes cross-origin
 app.use(cors({
-  origin: 'https://ljdw-front.vercel.app', // Remplacez par l'URL de votre frontend déployé
-  optionsSuccessStatus: 200
+  origin: 'https://ljdw-front.vercel.app' // Remplacez par l'URL de votre frontend déployé
 }));
 
 // Middleware pour parsing JSON
@@ -31,9 +30,16 @@ const upload = multer({
 });
 
 // Connexion à MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
+const dbUri = process.env.MONGODB_URI;
+console.log('Connecting to MongoDB with URI:', dbUri);
+
+mongoose.connect(dbUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch((error) => {
+  console.error('Error connecting to MongoDB:', error);
 });
 
 // Route de test pour vérifier le CORS
@@ -42,7 +48,7 @@ app.get('/api/test', (req, res) => {
 });
 
 // Gestion de la requête POST pour créer un nouveau post
-app.post('/api/posts', upload.single('file'), async (req, res) => {
+app.post('/api/posts.js', upload.single('file'), async (req, res) => {
   try {
     const { text } = req.body;
     const fileUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
@@ -55,7 +61,7 @@ app.post('/api/posts', upload.single('file'), async (req, res) => {
 });
 
 // Gestion de la requête GET pour récupérer les posts
-app.get('/api/posts', async (req, res) => {
+app.get('/api/posts.js', async (req, res) => {
   try {
     const posts = await Post.find().sort({ createdAt: -1 });
     res.status(200).json(posts);
