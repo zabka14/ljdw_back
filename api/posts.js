@@ -88,13 +88,13 @@ app.get('/api/posts.js', async (req, res) => {
 });
 
 // Gestion de la requête PUT pour liker un post
-app.put('/api/posts.js/:id/like', async (req, res) => {
+app.put('/api/posts.js', async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const { id, likes } = req.body;
+    const post = await Post.findById(id);
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
-    const { likes } = req.body;
     post.likes = likes;
     await post.save();
     res.status(200).json(post);
