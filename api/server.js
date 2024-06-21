@@ -4,6 +4,10 @@ const multer = require('multer');
 const Post = require('../models/Post');
 const cors = require('cors');
 const auth = require('./auth'); // Assurez-vous d'importer auth.js
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const session = require('express-session');
+const User = require('../models/User');
 
 // Initialisez une application Express
 const app = express();
@@ -18,6 +22,73 @@ app.use(express.json());
 
 // Utilisez le middleware d'authentification
 app.use(auth);
+
+app.use(express.urlencoded({ extended: true }));
+
+// Configurez la session
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Set secure: true if using https
+  }));
+
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+  
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await User.findById(id);
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
+  });
+  
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.CALLBACK_URL
+  }, async (token, tokenSecret, profile, done) => {
+    try {
+      let user = await User.findOne({ googleId: profile.id });
+      if (!user) {
+        user = new User({
+          googleId: profile.id,
+          displayName: profile.displayName,
+          emails: profile.emails.map(email => email.value)
+        });
+        await user.save();
+      }
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
+  }));
+  
+  app.get('/api/auth/test', (req, res) => {
+      res.status(200).send('Hello, world!');
+  })
+  
+  app.get('/api/auth', (req, res) => {
+      res.status(200).send('Hello, world, racine!!');
+  })
+  
+  // Routes d'authentification
+  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  
+  app.get('/api/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+      res.redirect('https://ljdw-front.vercel.app/'); // Redirection après authentification réussie
+    }
+  );
+  
+  app.get('/api/auth/logout', (req, res) => {
+    req.logout();
+    res.redirect('https://ljdw-front.vercel.app/');
+  });
 
 // Configuration de multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
