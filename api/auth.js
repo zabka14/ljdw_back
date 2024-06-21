@@ -61,13 +61,13 @@ app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile',
 app.get('/api/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('/'); // Redirection après authentification réussie
+    res.redirect('https://ljdw-front.vercel.app/'); // Redirection après authentification réussie
   }
 );
 
 app.get('/api/auth/logout', (req, res) => {
   req.logout();
-  res.redirect('/');
+  res.redirect('https://ljdw-front.vercel.app/');
 });
 
 module.exports = app;
