@@ -9,7 +9,8 @@ const app = express();
 
 // Utilisez le middleware CORS pour autoriser les requêtes cross-origin
 app.use(cors({
-  origin: 'https://ljdw-front.vercel.app' // Remplacez par l'URL de votre frontend déployé
+  origin: 'https://ljdw-front.vercel.app', // Remplacez par l'URL de votre frontend déployé
+  optionsSuccessStatus: 200
 }));
 
 // Middleware pour parsing JSON
@@ -33,6 +34,11 @@ const upload = multer({
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
+});
+
+// Route de test pour vérifier le CORS
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'CORS works!' });
 });
 
 // Gestion de la requête POST pour créer un nouveau post
