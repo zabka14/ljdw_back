@@ -13,7 +13,8 @@ const app = express();
 
 // Utilisez le middleware CORS pour autoriser les requêtes cross-origin
 app.use(cors({
-  origin: 'https://ljdw-front.vercel.app' // Remplacez par l'URL de votre frontend déployé
+  origin: 'https://ljdw-front.vercel.app', // Remplacez par l'URL de votre frontend déployé
+  credentials: true // Permettre les cookies d'authentification
 }));
 
 // Middleware pour parsing JSON
@@ -90,6 +91,14 @@ app.get('/api/auth', (req, res) => {
   res.status(200).send('Auth route works!');
 });
 
+// Middleware pour vérifier si l'utilisateur est authentifié
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: 'User not authenticated' });
+}
+
 // Configuration de multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -116,14 +125,6 @@ mongoose.connect(dbUri, {
 }).catch((error) => {
   console.error('Error connecting to MongoDB:', error);
 });
-
-// Middleware pour vérifier si l'utilisateur est authentifié
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ error: 'User not authenticated' });
-}
 
 // Gestion de la requête POST pour créer un nouveau post
 app.post('/api/posts', upload.single('file'), async (req, res) => {
