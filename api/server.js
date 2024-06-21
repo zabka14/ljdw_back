@@ -196,5 +196,21 @@ app.put('/api/posts/like', ensureAuthenticated, async (req, res) => {
   }
 });
 
+
+// Route pour vérifier l'authentification
+app.get('/api/auth/status', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.status(200).json({
+      authenticated: true,
+      user: req.user
+    });
+  } else {
+    res.status(401).json({
+      authenticated: false,
+      user: null
+    });
+  }
+});
+
 // Exportez l'application Express en tant que fonction serverless
 module.exports = app;
