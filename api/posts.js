@@ -50,8 +50,17 @@ app.get('/api/test', (req, res) => {
 // Gestion de la requête POST pour créer un nouveau post
 app.post('/api/posts.js', upload.single('file'), async (req, res) => {
   try {
-    const { text } = req.body;
-    const fileUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const { text, url } = req.body;
+    let fileUrl;
+    
+    if (req.file) {
+      fileUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    } else if (url) {
+      fileUrl = url;
+    } else {
+      return res.status(400).json({ error: 'File or URL is required.' });
+    }
+
     const newPost = new Post({ text, fileUrl });
     await newPost.save();
     res.status(201).json(newPost);
