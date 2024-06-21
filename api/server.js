@@ -25,8 +25,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false } // Set secure: true if using https
+  saveUninitialized: false,
+  cookie: { 
+    secure: true, // Assurez-vous que ce paramètre est défini si vous utilisez HTTPS
+    httpOnly: true, // Assurez-vous que ce paramètre est défini pour la sécurité
+    sameSite: 'none' // Assurez-vous que ce paramètre est défini pour les requêtes cross-origin
+  }
 }));
 
 // Initialisez Passport.js
