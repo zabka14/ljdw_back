@@ -69,11 +69,19 @@ app.post('/api/posts.js', upload.single('file'), async (req, res) => {
   }
 });
 
-// Gestion de la requête GET pour récupérer les posts
+// Gestion de la requête GET pour récupérer les posts avec pagination
 app.get('/api/posts.js', async (req, res) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 });
-    res.status(200).json(posts);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6;
+    const skip = (page - 1) * limit;
+    const totalPosts = await Post.countDocuments();
+    const posts = await Post.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+    res.status(200).json({
+      posts,
+      totalPages: Math.ceil(totalPosts / limit),
+      currentPage: page
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
