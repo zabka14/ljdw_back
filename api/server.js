@@ -82,8 +82,12 @@ app.get('/api/auth/google/callback',
 );
 
 app.get('/api/auth/logout', (req, res) => {
-  req.logout();
-  res.redirect('https://ljdw-front.vercel.app/');
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect('https://ljdw-front.vercel.app/');
+  });
 });
 
 // Route de test
@@ -195,7 +199,6 @@ app.put('/api/posts/like', ensureAuthenticated, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // Route pour vérifier l'authentification
 app.get('/api/auth/status', (req, res) => {
