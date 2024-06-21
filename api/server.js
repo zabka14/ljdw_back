@@ -82,6 +82,15 @@ passport.use(new GoogleStrategy({
   }
 }));
 
+
+app.use((req, res, next) => {
+  console.log('Cookies:', req.cookies);
+  console.log('Session:', req.session);
+  next();
+});
+
+
+
 // Routes d'authentification
 app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
