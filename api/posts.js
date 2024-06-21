@@ -15,6 +15,9 @@ app.use(cors({
 // Middleware pour parsing JSON
 app.use(express.json());
 
+// Utilisez le middleware d'authentification
+app.use(auth);
+
 // Configuration de multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -65,6 +68,14 @@ app.post('/api/posts', upload.single('file'), async (req, res) => {
   }
 });
 
+// Middleware pour vérifier si l'utilisateur est authentifié
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.status(401).json({ error: 'User not authenticated' });
+  }
+
 // Gestion de la requête GET pour récupérer les posts avec pagination
 app.get('/api/posts', async (req, res) => {
   try {
@@ -84,20 +95,30 @@ app.get('/api/posts', async (req, res) => {
 });
 
 // Gestion de la requête PUT pour liker un post
-app.put('/api/posts', async (req, res) => {
-  try {
-    const { id, likes } = req.body;
-    const post = await Post.findById(id);
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
+app.put('/api/posts', ensureAuthenticated, async (req, res) => {
+    try {
+      const { id, likes } = req.body;
+      const post = await Post.findById(id);
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+  
+      if (!post.likedBy) {
+        post.likedBy = [];
+      }
+  
+      if (post.likedBy.includes(req.user.id)) {
+        return res.status(400).json({ error: 'User already liked this post' });
+      }
+  
+      post.likes += 1;
+      post.likedBy.push(req.user.id);
+      await post.save();
+      res.status(200).json(post);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-    post.likes = likes;
-    await post.save();
-    res.status(200).json(post);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+  });
 
 // Exportez l'application Express en tant que fonction serverless
 module.exports = app;
