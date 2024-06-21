@@ -26,7 +26,6 @@ app.use(express.urlencoded({ extended: true }));
 // Utilisez cookie-parser pour gérer les cookies
 app.use(cookieParser());
 
-// Configurez la session
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -36,9 +35,10 @@ app.use(session({
     collectionName: 'sessions'
   }),
   cookie: { 
-    secure: true, // Assurez-vous que ce paramètre est défini si vous utilisez HTTPS
-    httpOnly: true, // Assurez-vous que ce paramètre est défini pour la sécurité
-    sameSite: 'none' // Assurez-vous que ce paramètre est défini pour les requêtes cross-origin
+    secure: true,
+    httpOnly: true,
+    sameSite: 'none',
+    domain: 'vercel.app' // Assurez-vous que ce domaine correspond à votre domaine de frontend et backend
   }
 }));
 
