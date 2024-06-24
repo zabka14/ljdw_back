@@ -65,8 +65,10 @@ app.get('/api/auth/google/callback', passport.authenticate('google', {
 }));
 
 app.get('/api/auth/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+  req.logout((err) => {
+    if (err) { return next(err); }
+    res.redirect('/');
+  });
 });
 
 app.get('/api/auth/status', (req, res) => {

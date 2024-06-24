@@ -182,7 +182,6 @@ async function checkAuthStatus() {
     console.log('Auth status response:', data);
     if (data.authenticated) {
       console.log('User is authenticated', data.user);
-      document.getElementById('auth-status').innerText = `Logged in as ${data.user.displayName}`;
       document.getElementById('login-btn').style.display = 'none';
       document.getElementById('user-name').innerText = `Logged in as ${data.user.displayName}`;
       document.getElementById('user-info').style.display = 'block';
@@ -192,7 +191,6 @@ async function checkAuthStatus() {
       document.querySelectorAll('.dislike-button').forEach(button => button.style.display = 'block');
     } else {
       console.log('User is not authenticated');
-      document.getElementById('auth-status').innerText = 'Not logged in';
       document.getElementById('login-btn').style.display = 'block';
       document.getElementById('user-info').style.display = 'none';
       document.getElementById('add-post-btn').style.display = 'none';
