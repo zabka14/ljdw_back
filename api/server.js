@@ -174,10 +174,9 @@ app.delete('/api/posts/:id', async (req, res) => {
       return res.status(403).json({ error: 'You are not authorized to delete this post' });
     }
 
-    await post.remove();
+    await Post.findByIdAndDelete(req.params.id); // Utiliser findByIdAndDelete
     res.status(200).json({ message: 'Post deleted successfully' });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message });
   }
 });
