@@ -15,7 +15,10 @@
       <div>
         <span id="auth-status">Checking authentication...</span>
         <a href="/api/auth/google" id="login-btn" class="btn btn-outline-primary">Login with Google</a>
-        <a href="/api/auth/logout" id="logout-btn" class="btn btn-outline-danger" style="display: none;">Logout</a>
+        <div id="user-info" style="display: none;">
+          <span id="user-name"></span>
+          <a href="/api/auth/logout" id="logout-btn" class="btn btn-outline-danger">Logout</a>
+        </div>
       </div>
       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">Ajouter</button>
     </div>

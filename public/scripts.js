@@ -134,12 +134,13 @@ async function checkAuthStatus() {
       console.log('User is authenticated', data.user);
       document.getElementById('auth-status').innerText = `Logged in as ${data.user.displayName}`;
       document.getElementById('login-btn').style.display = 'none';
-      document.getElementById('logout-btn').style.display = 'block';
+      document.getElementById('user-name').innerText = `Logged in as ${data.user.displayName}`;
+      document.getElementById('user-info').style.display = 'block';
     } else {
       console.log('User is not authenticated');
       document.getElementById('auth-status').innerText = 'Not logged in';
       document.getElementById('login-btn').style.display = 'block';
-      document.getElementById('logout-btn').style.display = 'none';
+      document.getElementById('user-info').style.display = 'none';
     }
   } catch (error) {
     console.error('Error:', error);
@@ -150,4 +151,3 @@ async function checkAuthStatus() {
 checkAuthStatus();
 
 fetchPosts();
- 
