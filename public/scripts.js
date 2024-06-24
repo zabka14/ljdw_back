@@ -146,7 +146,6 @@ async function checkAuthStatus() {
   }
 }
 
-
 // Appelez cette fonction au chargement de la page ou à tout moment nécessaire
 checkAuthStatus();
 

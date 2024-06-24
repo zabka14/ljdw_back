@@ -1,10 +1,24 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const session = require('express-session');
+const passport = require('./auth');
 const Post = require('../models/Post');
+const User = require('../models/User'); // Assurez-vous d'avoir un modèle User
 
 // Initialisez une application Express
 const app = express();
+
+// Configuration de la session
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Initialisation de Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Configuration de multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
@@ -33,12 +47,33 @@ mongoose.connect(dbUri, {
   console.error('Error connecting to MongoDB:', error);
 });
 
+// Routes d'authentification
+app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/api/auth/google/callback', passport.authenticate('google', {
+  failureRedirect: '/',
+  successRedirect: '/'
+}));
+
+app.get('/api/auth/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
+
+app.get('/api/auth/status', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ authenticated: true, user: req.user });
+  } else {
+    res.json({ authenticated: false });
+  }
+});
+
 // Gestion de la requête POST pour créer un nouveau post
 app.post('/api/posts', upload.single('file'), async (req, res) => {
   try {
     const { text, url } = req.body;
     let fileUrl;
-    
+
     if (req.file) {
       fileUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     } else if (url) {
