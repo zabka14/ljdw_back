@@ -182,27 +182,27 @@ async function checkAuthStatus() {
     console.log('Auth status response:', data);
     if (data.authenticated) {
       console.log('User is authenticated', data.user);
-      document.getElementById('auth-status').innerText = `Logged in as ${data.user.displayName}`;
-      document.getElementById('login-btn').style.display = 'none';
       document.getElementById('user-name').innerText = `Logged in as ${data.user.displayName}`;
+      document.getElementById('login-btn').style.display = 'none';
       document.getElementById('user-info').style.display = 'block';
       document.getElementById('add-post-btn').style.display = 'block';
-      // Afficher les boutons de like/dislike
-      document.querySelectorAll('.like-button').forEach(button => button.style.display = 'block');
-      document.querySelectorAll('.dislike-button').forEach(button => button.style.display = 'block');
     } else {
       console.log('User is not authenticated');
-      document.getElementById('auth-status').innerText = 'Not logged in';
       document.getElementById('login-btn').style.display = 'block';
       document.getElementById('user-info').style.display = 'none';
       document.getElementById('add-post-btn').style.display = 'none';
-      // Masquer les boutons de like/dislike
-      document.querySelectorAll('.like-button').forEach(button => button.style.display = 'none');
-      document.querySelectorAll('.dislike-button').forEach(button => button.style.display = 'none');
     }
+    updateLikeButtonsVisibility(data.authenticated);
   } catch (error) {
     console.error('Error:', error);
   }
+}
+
+function updateLikeButtonsVisibility(isAuthenticated) {
+  const likeButtons = document.querySelectorAll('.like-button, .dislike-button');
+  likeButtons.forEach(button => {
+    button.style.display = isAuthenticated ? 'block' : 'none';
+  });
 }
 
 // Appelez cette fonction au chargement de la page ou à tout moment nécessaire
