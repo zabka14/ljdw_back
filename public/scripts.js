@@ -79,6 +79,7 @@ function displayPost(post) {
           <button class="btn btn-sm btn-outline-primary like-button" data-id="${post._id}">Like</button>
           <button class="btn btn-sm btn-outline-danger dislike-button" data-id="${post._id}" style="display: none;">Dislike</button>
           <span class="likes-count">${post.likes} likes</span>
+          ${post.author._id === getUserID() ? `<button class="btn btn-sm btn-outline-danger delete-button" data-id="${post._id}">Delete</button>` : ''}
         </div>
       </div>
     </div>
@@ -87,8 +88,35 @@ function displayPost(post) {
 
   postElement.querySelector('.like-button').addEventListener('click', () => likePost(post._id));
   postElement.querySelector('.dislike-button').addEventListener('click', () => dislikePost(post._id));
+  const deleteButton = postElement.querySelector('.delete-button');
+  if (deleteButton) {
+    deleteButton.addEventListener('click', () => deletePost(post._id));
+  }
 
   checkLikedStatus(post._id);
+}
+
+function getUserID() {
+  const userInfo = document.getElementById('user-info').dataset.user;
+  return userInfo ? JSON.parse(userInfo)._id : null;
+}
+
+async function deletePost(postId) {
+  try {
+    const response = await fetch(`/api/posts/${postId}`, {
+      method: 'DELETE',
+      credentials: 'include' // Inclure les cookies de session
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const result = await response.json();
+    if (result.message) {
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error('Error:', error);
+  }
 }
 
 async function likePost(postId) {
