@@ -183,11 +183,13 @@ async function checkAuthStatus() {
       console.log('User is authenticated', data.user);
       document.getElementById('user-name').innerText = `Logged in as ${data.user.displayName}`;
       document.getElementById('login-btn').style.display = 'none';
+      document.getElementById('logout-btn').style.display = 'block';
       document.getElementById('user-info').style.display = 'block';
       document.getElementById('add-post-btn').style.display = 'block';
     } else {
       console.log('User is not authenticated');
       document.getElementById('login-btn').style.display = 'block';
+      document.getElementById('logout-btn').style.display = 'none';
       document.getElementById('user-info').style.display = 'none';
       document.getElementById('add-post-btn').style.display = 'none';
     }
