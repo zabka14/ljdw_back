@@ -2,8 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const session = require('express-session');
+const MongoStore = require('connect-mongo'); // Modifiez cette ligne
 const passport = require('./auth');
-const MongoStore = require('connect-mongo')(session); // Ajoutez ceci pour utiliser MongoDB pour les sessions
 const Post = require('../models/Post');
 
 // Initialisez une application Express
@@ -20,7 +20,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  store: new MongoStore({ mongooseConnection: mongoose.connection }), // Utilisez MongoDB pour stocker les sessions
+  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }), // Modifiez cette ligne
   cookie: { secure: false } // Utilisez true si vous utilisez HTTPS
 }));
 
@@ -61,10 +61,7 @@ app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile',
 app.get('/api/auth/google/callback', passport.authenticate('google', {
   failureRedirect: '/',
   successRedirect: '/'
-}), (req, res) => {
-  console.log('User after authentication:', req.user);
-});
-
+}));
 
 app.get('/api/auth/logout', (req, res) => {
   req.logout();
