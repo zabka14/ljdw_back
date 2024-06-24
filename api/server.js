@@ -3,18 +3,25 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const session = require('express-session');
 const passport = require('./auth');
+const MongoStore = require('connect-mongo')(session); // Ajoutez ceci pour utiliser MongoDB pour les sessions
 const Post = require('../models/Post');
-const User = require('../models/User'); // Assurez-vous d'avoir un modèle User
 
 // Initialisez une application Express
 const app = express();
+
+// Middleware pour parser le JSON
+app.use(express.json());
+
+// Middleware pour parser les données URL-encoded
+app.use(express.urlencoded({ extended: true }));
 
 // Configuration de la session
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true } // Utilisez true si vous utilisez HTTPS
+  store: new MongoStore({ mongooseConnection: mongoose.connection }), // Utilisez MongoDB pour stocker les sessions
+  cookie: { secure: false } // Utilisez true si vous utilisez HTTPS
 }));
 
 // Initialisation de Passport
@@ -54,7 +61,10 @@ app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile',
 app.get('/api/auth/google/callback', passport.authenticate('google', {
   failureRedirect: '/',
   successRedirect: '/'
-}));
+}), (req, res) => {
+  console.log('User after authentication:', req.user);
+});
+
 
 app.get('/api/auth/logout', (req, res) => {
   req.logout();
