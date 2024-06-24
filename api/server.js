@@ -177,6 +177,7 @@ app.delete('/api/posts/:id', async (req, res) => {
     await post.remove();
     res.status(200).json({ message: 'Post deleted successfully' });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 });
