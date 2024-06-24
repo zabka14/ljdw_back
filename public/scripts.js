@@ -90,7 +90,7 @@ function displayPost(post) {
   postElement.querySelector('.dislike-button').addEventListener('click', () => dislikePost(post._id));
   const deleteButton = postElement.querySelector('.delete-button');
   if (deleteButton) {
-    deleteButton.addEventListener('click', () => deletePost(post._id));
+    deleteButton.addEventListener('click', () => confirmDelete(post._id));
   }
 
   checkLikedStatus(post._id);
@@ -99,6 +99,12 @@ function displayPost(post) {
 function getUserID() {
   const userInfo = document.getElementById('user-info').dataset.user;
   return userInfo ? JSON.parse(userInfo)._id : null;
+}
+
+function confirmDelete(postId) {
+  if (confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+    deletePost(postId);
+  }
 }
 
 async function deletePost(postId) {
