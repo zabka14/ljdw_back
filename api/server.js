@@ -13,7 +13,8 @@ const app = express();
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: { secure: true } // Utilisez true si vous utilisez HTTPS
 }));
 
 // Initialisation de Passport

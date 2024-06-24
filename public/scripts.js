@@ -130,6 +130,7 @@ async function checkAuthStatus() {
       credentials: 'include' // Inclure les cookies de session
     });
     const data = await response.json();
+    console.log('Auth status response:', data);
     if (data.authenticated) {
       console.log('User is authenticated', data.user);
       document.getElementById('auth-status').innerText = `Logged in as ${data.user.displayName}`;
