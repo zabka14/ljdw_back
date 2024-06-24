@@ -12,14 +12,14 @@
   <div class="container mt-5">
     <div class="sticky-top bg-light py-3 d-flex justify-content-between align-items-center border-bottom">
       <h1 class="text-center">Les Joies de Wedo</h1>
-      <div class="d-flex align-items-center">
-        <button id="add-post-btn" type="button" class="btn btn-primary mx-auto" data-toggle="modal" data-target="#uploadModal" style="display: none;">Ajouter</button>
-        <div id="user-info" style="display: none;" class="d-flex align-items-center ml-auto">
+      <div>
+        <a href="/api/auth/google" id="login-btn" class="btn btn-outline-primary">Login with Google</a>
+        <div id="user-info" style="display: none;" class="d-flex align-items-center">
           <span id="user-name" class="mr-3"></span>
           <a href="/api/auth/logout" style="display: none;" id="logout-btn" class="btn btn-outline-danger">Logout</a>
         </div>
-        <a href="/api/auth/google" id="login-btn" class="btn btn-outline-primary">Login with Google</a>
       </div>
+      <button id="add-post-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal" style="display: none;">Ajouter</button>
     </div>
     <div id="posts" class="row mt-4"></div>
     <nav class="mt-4">
