@@ -192,17 +192,9 @@ async function checkAuthStatus() {
       document.getElementById('user-info').style.display = 'none';
       document.getElementById('add-post-btn').style.display = 'none';
     }
-    updateLikeButtonsVisibility(data.authenticated);
   } catch (error) {
     console.error('Error:', error);
   }
-}
-
-function updateLikeButtonsVisibility(isAuthenticated) {
-  const likeButtons = document.querySelectorAll('.like-button, .dislike-button');
-  likeButtons.forEach(button => {
-    button.style.display = isAuthenticated ? 'block' : 'none';
-  });
 }
 
 // Appelez cette fonction au chargement de la page ou à tout moment nécessaire
