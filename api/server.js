@@ -5,6 +5,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo'); // Modifiez cette ligne
 const passport = require('./auth');
 const Post = require('../models/Post');
+const User = require('../models/User'); // Assurez-vous d'avoir un modèle User
 
 // Initialisez une application Express
 const app = express();
@@ -119,7 +120,7 @@ app.get('/api/posts', async (req, res) => {
 // Gestion de la requête PUT pour liker un post
 app.put('/api/posts/like', async (req, res) => {
   try {
-    const { id, likes } = req.body;
+    const { id } = req.body;
     const post = await Post.findById(id);
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
@@ -135,6 +136,33 @@ app.put('/api/posts/like', async (req, res) => {
 
     post.likes += 1;
     post.likedBy.push(req.user.id);
+    await post.save();
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Gestion de la requête PUT pour disliker un post
+app.put('/api/posts/dislike', async (req, res) => {
+  try {
+    const { id } = req.body;
+    const post = await Post.findById(id);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    if (!post.likedBy) {
+      post.likedBy = [];
+    }
+
+    const index = post.likedBy.indexOf(req.user.id);
+    if (index === -1) {
+      return res.status(400).json({ error: 'User has not liked this post' });
+    }
+
+    post.likes -= 1;
+    post.likedBy.splice(index, 1);
     await post.save();
     res.status(200).json(post);
   } catch (error) {

@@ -76,6 +76,7 @@ function displayPost(post) {
           `<img src="${post.fileUrl}" class="card-img-top" alt="Image">`}
         <div class="d-flex justify-content-between align-items-center mt-2">
           <button class="btn btn-sm btn-outline-primary like-button" data-id="${post._id}">Like</button>
+          <button class="btn btn-sm btn-outline-danger dislike-button" data-id="${post._id}" style="display: none;">Dislike</button>
           <span class="likes-count">${post.likes} likes</span>
         </div>
       </div>
@@ -83,11 +84,15 @@ function displayPost(post) {
   `;
   document.getElementById('posts').appendChild(postElement);
 
-  // Ajouter un gestionnaire d'événements pour le bouton like
-  postElement.querySelector('.like-button').addEventListener('click', () => likePost(post._id, post.likes + 1));
+  // Ajouter un gestionnaire d'événements pour les boutons like et dislike
+  postElement.querySelector('.like-button').addEventListener('click', () => likePost(post._id));
+  postElement.querySelector('.dislike-button').addEventListener('click', () => dislikePost(post._id));
+
+  // Vérifiez si l'utilisateur a aimé le post
+  checkLikedStatus(post._id);
 }
 
-async function likePost(postId, newLikes) {
+async function likePost(postId) {
   try {
     const response = await fetch('/api/posts/like', {
       method: 'PUT',
@@ -95,14 +100,58 @@ async function likePost(postId, newLikes) {
         'Content-Type': 'application/json'
       },
       credentials: 'include', // Inclure les cookies de session
-      body: JSON.stringify({ id: postId, likes: newLikes })
+      body: JSON.stringify({ id: postId })
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const updatedPost = await response.json();
+    updatePostLikes(updatedPost);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+async function dislikePost(postId) {
+  try {
+    const response = await fetch('/api/posts/dislike', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include', // Inclure les cookies de session
+      body: JSON.stringify({ id: postId })
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const updatedPost = await response.json();
+    updatePostLikes(updatedPost);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+function updatePostLikes(post) {
+  const postElement = document.querySelector(`.like-button[data-id="${post._id}"]`).closest('.post');
+  postElement.querySelector('.likes-count').textContent = `${post.likes} likes`;
+  checkLikedStatus(post._id);
+}
+
+async function checkLikedStatus(postId) {
+  try {
+    const response = await fetch(`/api/posts/${postId}/liked-status`, {
+      credentials: 'include' // Inclure les cookies de session
+    });
+    const data = await response.json();
     const postElement = document.querySelector(`.like-button[data-id="${postId}"]`).closest('.post');
-    postElement.querySelector('.likes-count').textContent = `${updatedPost.likes} likes`;
+    if (data.liked) {
+      postElement.querySelector('.like-button').style.display = 'none';
+      postElement.querySelector('.dislike-button').style.display = 'block';
+    } else {
+      postElement.querySelector('.like-button').style.display = 'block';
+      postElement.querySelector('.dislike-button').style.display = 'none';
+    }
   } catch (error) {
     console.error('Error:', error);
   }
@@ -137,11 +186,19 @@ async function checkAuthStatus() {
       document.getElementById('login-btn').style.display = 'none';
       document.getElementById('user-name').innerText = `Logged in as ${data.user.displayName}`;
       document.getElementById('user-info').style.display = 'block';
+      document.getElementById('add-post-btn').style.display = 'block';
+      // Afficher les boutons de like/dislike
+      document.querySelectorAll('.like-button').forEach(button => button.style.display = 'block');
+      document.querySelectorAll('.dislike-button').forEach(button => button.style.display = 'block');
     } else {
       console.log('User is not authenticated');
       document.getElementById('auth-status').innerText = 'Not logged in';
       document.getElementById('login-btn').style.display = 'block';
       document.getElementById('user-info').style.display = 'none';
+      document.getElementById('add-post-btn').style.display = 'none';
+      // Masquer les boutons de like/dislike
+      document.querySelectorAll('.like-button').forEach(button => button.style.display = 'none');
+      document.querySelectorAll('.dislike-button').forEach(button => button.style.display = 'none');
     }
   } catch (error) {
     console.error('Error:', error);
