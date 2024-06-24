@@ -2,121 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const Post = require('../models/Post');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const session = require('express-session');
-const User = require('../models/User');
-const MongoStore = require('connect-mongo');
-const cookieParser = require('cookie-parser');
 
 // Initialisez une application Express
 const app = express();
-
-
-// Middleware pour parsing JSON
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Utilisez cookie-parser pour gérer les cookies
-app.use(cookieParser());
-
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-    collectionName: 'sessions'
-  }),
-  cookie: { 
-    secure: true, // Utilisez true si vous êtes en HTTPS
-    httpOnly: false,
-    sameSite: 'none',
-    domain: '.vercel.app' // Assurez-vous d'inclure le point pour couvrir tous les sous-domaines
-  }
-}));
-
-// Initialisez Passport.js
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (error) {
-    done(error, null);
-  }
-});
-
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.CALLBACK_URL
-}, async (token, tokenSecret, profile, done) => {
-  try {
-    let user = await User.findOne({ googleId: profile.id });
-    if (!user) {
-      user = new User({
-        googleId: profile.id,
-        displayName: profile.displayName,
-        emails: profile.emails.map(email => email.value)
-      });
-      await user.save();
-    }
-    console.log('User authenticated:', user);
-    done(null, user);
-  } catch (error) {
-    console.error('Error in Google Strategy:', error);
-    done(error, null);
-  }
-}));
-
-
-app.use((req, res, next) => {
-  console.log('Cookies:', req.cookies);
-  console.log('Session:', req.session);
-  next();
-});
-
-
-
-// Routes d'authentification
-app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-app.get('/api/auth/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/' }),
-  (req, res) => {
-    console.log('Google callback, user:', req.user);
-    res.redirect('/'); // Redirection après authentification réussie
-  }
-);
-
-app.get('/api/auth/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
-});
-
-// Route de test
-app.get('/api/auth/test', (req, res) => {
-  res.status(200).send('Test route works!');
-});
-
-app.get('/api/auth', (req, res) => {
-  res.status(200).send('Auth route works!');
-});
-
-// Middleware pour vérifier si l'utilisateur est authentifié
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ error: 'User not authenticated' });
-}
 
 // Configuration de multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
@@ -186,7 +74,7 @@ app.get('/api/posts', async (req, res) => {
 });
 
 // Gestion de la requête PUT pour liker un post
-app.put('/api/posts/like', ensureAuthenticated, async (req, res) => {
+app.put('/api/posts/like', async (req, res) => {
   try {
     const { id, likes } = req.body;
     const post = await Post.findById(id);
@@ -209,33 +97,6 @@ app.put('/api/posts/like', ensureAuthenticated, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
-
-// Route pour vérifier l'authentification
-app.get('/api/auth/status', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.status(200).json({
-      authenticated: true,
-      user: req.user
-    });
-  } else {
-    res.status(401).json({
-      authenticated: false,
-      user: null
-    });
-  }
-});
-
-// Route de test pour vérifier les cookies de session
-app.get('/api/auth/test-cookie', (req, res) => {
-  console.log('Cookies:', req.cookies);
-  console.log('Session:', req.session);
-  console.log('Is Authenticated:', req.isAuthenticated());
-  res.json({
-    cookies: req.cookies,
-    session: req.session,
-    isAuthenticated: req.isAuthenticated()
-  });
 });
 
 // Exportez l'application Express en tant que fonction serverless

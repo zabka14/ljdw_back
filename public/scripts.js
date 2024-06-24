@@ -146,17 +146,6 @@ async function checkAuthStatus() {
   }
 }
 
-document.getElementById('test-cookie-btn').addEventListener('click', async () => {
-  try {
-    const response = await fetch('/api/auth/test-cookie', {
-      credentials: 'include' // Inclure les cookies de session
-    });
-    const data = await response.json();
-    document.getElementById('test-cookie-result').innerText = JSON.stringify(data, null, 2);
-  } catch (error) {
-    console.error('Error:', error);
-  }
-});
 
 // Appelez cette fonction au chargement de la page ou à tout moment nécessaire
 checkAuthStatus();
