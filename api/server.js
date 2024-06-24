@@ -2,34 +2,27 @@ const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const session = require('express-session');
-const MongoStore = require('connect-mongo'); // Modifiez cette ligne
+const MongoStore = require('connect-mongo');
 const passport = require('./auth');
 const Post = require('../models/Post');
-const User = require('../models/User'); // Assurez-vous d'avoir un modèle User
+const User = require('../models/User');
 
-// Initialisez une application Express
 const app = express();
 
-// Middleware pour parser le JSON
 app.use(express.json());
-
-// Middleware pour parser les données URL-encoded
 app.use(express.urlencoded({ extended: true }));
 
-// Configuration de la session
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }), // Modifiez cette ligne
-  cookie: { secure: false } // Utilisez true si vous utilisez HTTPS
+  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+  cookie: { secure: false }
 }));
 
-// Initialisation de Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Configuration de multer pour gérer les fichiers uploadés
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -43,7 +36,6 @@ const upload = multer({
   }
 });
 
-// Connexion à MongoDB
 const dbUri = process.env.MONGODB_URI;
 console.log('Connecting to MongoDB with URI:', dbUri);
 
@@ -56,7 +48,6 @@ mongoose.connect(dbUri, {
   console.error('Error connecting to MongoDB:', error);
 });
 
-// Routes d'authentification
 app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/api/auth/google/callback', passport.authenticate('google', {
@@ -79,7 +70,6 @@ app.get('/api/auth/status', (req, res) => {
   }
 });
 
-// Gestion de la requête POST pour créer un nouveau post
 app.post('/api/posts', upload.single('file'), async (req, res) => {
   try {
     const { text, url } = req.body;
@@ -93,7 +83,11 @@ app.post('/api/posts', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'File or URL is required.' });
     }
 
-    const newPost = new Post({ text, fileUrl });
+    const newPost = new Post({
+      text,
+      fileUrl,
+      author: req.user._id // Enregistre l'ID de l'utilisateur
+    });
     await newPost.save();
     res.status(201).json(newPost);
   } catch (error) {
@@ -101,14 +95,13 @@ app.post('/api/posts', upload.single('file'), async (req, res) => {
   }
 });
 
-// Gestion de la requête GET pour récupérer les posts avec pagination
 app.get('/api/posts', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 6;
     const skip = (page - 1) * limit;
     const totalPosts = await Post.countDocuments();
-    const posts = await Post.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
+    const posts = await Post.find().sort({ createdAt: -1 }).skip(skip).limit(limit).populate('author', 'displayName');
     res.status(200).json({
       posts,
       totalPages: Math.ceil(totalPosts / limit),
@@ -119,7 +112,6 @@ app.get('/api/posts', async (req, res) => {
   }
 });
 
-// Gestion de la requête PUT pour liker un post
 app.put('/api/posts/like', async (req, res) => {
   try {
     const { id } = req.body;
@@ -145,7 +137,6 @@ app.put('/api/posts/like', async (req, res) => {
   }
 });
 
-// Gestion de la requête PUT pour disliker un post
 app.put('/api/posts/dislike', async (req, res) => {
   try {
     const { id } = req.body;
@@ -172,7 +163,6 @@ app.put('/api/posts/dislike', async (req, res) => {
   }
 });
 
-// Nouvelle route pour vérifier le statut de like d'un post
 app.get('/api/posts/:id/liked-status', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -187,5 +177,4 @@ app.get('/api/posts/:id/liked-status', async (req, res) => {
   }
 });
 
-// Exportez l'application Express en tant que fonction serverless
 module.exports = app;

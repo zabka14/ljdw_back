@@ -9,21 +9,20 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-light">
-  <div class="container">
-    <div class="sticky-top bg-light py-3 d-flex justify-content-between align-items-center">
+  <div class="container mt-5">
+    <div class="sticky-top bg-light py-3 d-flex justify-content-between align-items-center border-bottom">
       <h1 class="text-center">Les Joies de Wedo</h1>
       <div>
-        <span id="auth-status"></span>
         <a href="/api/auth/google" id="login-btn" class="btn btn-outline-primary">Login with Google</a>
-        <div id="user-info" style="display: none;">
-          <span id="user-name"></span>
+        <div id="user-info" style="display: none;" class="d-flex align-items-center">
+          <span id="user-name" class="mr-3"></span>
           <a href="/api/auth/logout" id="logout-btn" class="btn btn-outline-danger">Logout</a>
         </div>
       </div>
       <button id="add-post-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal" style="display: none;">Ajouter</button>
     </div>
-    <div id="posts" class="row"></div>
-    <nav>
+    <div id="posts" class="row mt-4"></div>
+    <nav class="mt-4">
       <ul class="pagination justify-content-center" id="pagination"></ul>
     </nav>
   </div>

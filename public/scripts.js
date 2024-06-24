@@ -74,6 +74,7 @@ function displayPost(post) {
         ${post.fileUrl.startsWith('data:video') || post.fileUrl.includes('webm') ? 
           `<video src="${post.fileUrl}" class="card-img-top" autoplay loop muted></video>` : 
           `<img src="${post.fileUrl}" class="card-img-top" alt="Image">`}
+        <p class="card-text"><small class="text-muted">Posted by ${post.author.displayName}</small></p>
         <div class="d-flex justify-content-between align-items-center mt-2">
           <button class="btn btn-sm btn-outline-primary like-button" data-id="${post._id}">Like</button>
           <button class="btn btn-sm btn-outline-danger dislike-button" data-id="${post._id}" style="display: none;">Dislike</button>
@@ -84,11 +85,9 @@ function displayPost(post) {
   `;
   document.getElementById('posts').appendChild(postElement);
 
-  // Ajouter un gestionnaire d'événements pour les boutons like et dislike
   postElement.querySelector('.like-button').addEventListener('click', () => likePost(post._id));
   postElement.querySelector('.dislike-button').addEventListener('click', () => dislikePost(post._id));
 
-  // Vérifiez si l'utilisateur a aimé le post
   checkLikedStatus(post._id);
 }
 

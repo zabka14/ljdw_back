@@ -4,7 +4,8 @@ const postSchema = new mongoose.Schema({
   text: String,
   fileUrl: String,
   likes: { type: Number, default: 0 },
-  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] // Ajoutez ce champ
+  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Nouveau champ
 }, {
   timestamps: true
 });
