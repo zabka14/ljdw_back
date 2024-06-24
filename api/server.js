@@ -172,5 +172,20 @@ app.put('/api/posts/dislike', async (req, res) => {
   }
 });
 
+// Nouvelle route pour vérifier le statut de like d'un post
+app.get('/api/posts/:id/liked-status', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const liked = post.likedBy.includes(req.user.id);
+    res.status(200).json({ liked });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Exportez l'application Express en tant que fonction serverless
 module.exports = app;
