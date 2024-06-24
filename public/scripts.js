@@ -78,8 +78,8 @@ function displayPost(post) {
         <div class="d-flex justify-content-between align-items-center mt-2">
           <button class="btn btn-sm btn-outline-primary like-button" data-id="${post._id}">Like</button>
           <button class="btn btn-sm btn-outline-danger dislike-button" data-id="${post._id}" style="display: none;">Dislike</button>
-          <span class="likes-count">${post.likes} likes</span>
           ${post.author._id === getUserID() ? `<button class="btn btn-sm btn-outline-danger delete-button" data-id="${post._id}">Delete</button>` : ''}
+          <span class="likes-count">${post.likes} likes</span>
         </div>
       </div>
     </div>
