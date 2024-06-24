@@ -213,6 +213,7 @@ async function checkAuthStatus() {
       document.getElementById('login-btn').style.display = 'none';
       document.getElementById('logout-btn').style.display = 'block';
       document.getElementById('user-info').style.display = 'block';
+      document.getElementById('user-info').dataset.user = JSON.stringify(data.user);
       document.getElementById('add-post-btn').style.display = 'block';
     } else {
       console.log('User is not authenticated');
